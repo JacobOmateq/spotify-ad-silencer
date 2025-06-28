@@ -19,6 +19,7 @@ import logging
 import random
 import glob
 from typing import Optional, Dict, Any
+from version import __version__ as APP_VERSION
 
 # Try to import pygame for audio playback
 try:
@@ -29,9 +30,6 @@ except ImportError:
     logger = logging.getLogger(__name__)
     logger.warning("pygame not available. Random audio playback will be disabled.")
     logger.info("To enable random audio playback, install pygame with: pip install pygame")
-
-# Application version
-APP_VERSION = "1.0.0"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
