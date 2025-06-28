@@ -18,7 +18,7 @@ class PackageBuilder:
         
     def clean_build_dirs(self):
         """Clean previous build artifacts"""
-        print("🧹 Cleaning build directories...")
+        print("Cleaning build directories...")
         if self.dist_dir.exists():
             shutil.rmtree(self.dist_dir)
         if self.build_dir.exists():
@@ -27,7 +27,7 @@ class PackageBuilder:
         
     def build_executable(self):
         """Build standalone executable with donation integration"""
-        print(f"🔨 Building executable for {self.current_os}...")
+        print(f"Building executable for {self.current_os}...")
         
         # Platform-specific executable name
         if self.current_os == "windows":
@@ -68,10 +68,10 @@ class PackageBuilder:
         
         try:
             result = subprocess.run(cmd, check=True)
-            print(f"✅ Executable built successfully: {exe_name}")
+            print(f"Executable built successfully: {exe_name}")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ Build failed: {e}")
+            print(f"Build failed: {e}")
             return False
     
     def create_portable_package(self):
@@ -352,15 +352,15 @@ StartupNotify=true
     
     def build_all_platforms(self):
         """Build for all supported platforms"""
-        print("🚀 Starting cross-platform build process...")
+        print("Starting cross-platform build process...")
         
         self.clean_build_dirs()
         
         if self.build_executable():
             self.create_portable_package()
-            print(f"✅ Build completed for {self.current_os}")
+            print(f"Build completed for {self.current_os}")
         else:
-            print(f"❌ Build failed for {self.current_os}")
+            print(f"Build failed for {self.current_os}")
             return False
         
         return True
