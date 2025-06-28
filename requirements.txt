@@ -1,6 +1,7 @@
 # Cross-platform dependencies
 psutil==5.9.8
 pygame==2.5.2
+requests==2.32.3
 
 # Windows-specific dependencies
 pycaw==20240210; sys_platform == "win32"

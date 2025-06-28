@@ -65,6 +65,7 @@ class EnhancedAdDetector:
                 AdPattern(r"^\s*$", 'generic', 0.85, 'regex'),  # Empty or whitespace only
                 AdPattern(r"Premium", 'generic', 0.60, 'contains'),  # "Premium" in any language
                 AdPattern(r"Free", 'generic', 0.60, 'contains'),  # "Free" appears in many languages
+                
                 # Common "watch now" patterns in different languages
                 AdPattern("Titta nu", 'generic', 0.85, 'exact'),  # Swedish
                 AdPattern("Watch now", 'generic', 0.85, 'exact'),  # English
@@ -73,6 +74,25 @@ class EnhancedAdDetector:
                 AdPattern("Ver ahora", 'generic', 0.85, 'exact'),  # Spanish
                 AdPattern("Guarda ora", 'generic', 0.85, 'exact'),  # Italian
                 AdPattern("Bekijk nu", 'generic', 0.85, 'exact'),  # Dutch
+                
+                # Additional common ad patterns
+                AdPattern("Spotify Ad", 'generic', 0.95, 'contains'),  # Direct ad indicator
+                AdPattern("Commercial", 'generic', 0.90, 'contains'),  # Commercial break
+                AdPattern("Upgrade", 'generic', 0.75, 'contains'),  # Upgrade prompts
+                AdPattern("Try Premium", 'generic', 0.80, 'contains'),  # Premium trial ads
+                AdPattern("Get Premium", 'generic', 0.80, 'contains'),  # Premium promotion
+                AdPattern("Ad-free", 'generic', 0.75, 'contains'),  # Ad-free promotion
+                AdPattern("No ads", 'generic', 0.75, 'contains'),  # No ads promotion
+                AdPattern("Listen without", 'generic', 0.75, 'contains'),  # Listen without ads
+                
+                # Short suspicious titles (common for ads)
+                AdPattern(r"^.{1,10}$", 'generic', 0.70, 'regex'),  # Very short titles (1-10 chars)
+                AdPattern(r"^\w+\s*\w*$", 'generic', 0.65, 'regex'),  # 1-2 words only
+                
+                # Video/visual ad indicators
+                AdPattern("Video", 'generic', 0.70, 'contains'),  # Video ads
+                AdPattern("Play", 'generic', 0.60, 'contains'),  # Play button ads
+                AdPattern("Click", 'generic', 0.60, 'contains'),  # Click here ads
             ]
         }
         
@@ -104,7 +124,7 @@ class EnhancedAdDetector:
         
         return patterns
     
-    def is_ad_playing(self, window_title: str, confidence_threshold: float = 0.7) -> bool:
+    def is_ad_playing(self, window_title: str, confidence_threshold: float = 0.6) -> bool:
         """
         Determine if an ad is playing based on window title
         """
