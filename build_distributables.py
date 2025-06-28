@@ -76,7 +76,7 @@ class PackageBuilder:
     
     def create_portable_package(self):
         """Create a portable package with all necessary files"""
-        print("📦 Creating portable package...")
+        print("Creating portable package...")
         
         package_name = f"SpotifyAdSilencer-{self.current_os}-portable"
         package_dir = self.dist_dir / package_name
@@ -121,7 +121,7 @@ class PackageBuilder:
         zip_path = self.dist_dir / f"{package_name}.zip"
         self.create_zip_archive(package_dir, zip_path)
         
-        print(f"✅ Portable package created: {zip_path}")
+        print(f"Portable package created: {zip_path}")
         return zip_path
     
     def create_installation_guide(self, package_dir):
@@ -287,7 +287,7 @@ All donations help with:
 - 📖 Documentation and video tutorials
 - ⏰ Time to maintain and improve the project
 
-## 🙏 Current Supporters
+## Current Supporters
 
 *Thank you to all supporters! You make this project possible.*
 
@@ -370,12 +370,12 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1 and sys.argv[1] == "--clean":
         builder.clean_build_dirs()
-        print("🧹 Build directories cleaned")
+        print("Build directories cleaned")
     else:
         success = builder.build_all_platforms()
         if success:
-            print("🎉 Build process completed successfully!")
-            print("📦 Check the 'dist' folder for your distributable packages")
+            print("Build process completed successfully!")
+            print("Check the 'dist' folder for your distributable packages")
         else:
-            print("💥 Build process failed")
+            print("Build process failed")
             sys.exit(1)
