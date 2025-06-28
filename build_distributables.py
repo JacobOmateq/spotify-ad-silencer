@@ -36,23 +36,33 @@ class PackageBuilder:
             exe_name = "SpotifyAdSilencer"
         
         cmd = [
-            "pyinstaller", 
+            "python", "-m", "PyInstaller", 
             "--onefile",
             "--name", "SpotifyAdSilencer",
             "--distpath", str(self.dist_dir),
             "--workpath", str(self.build_dir),
             "--specpath", str(self.build_dir),
-            # Include data files
-            "--add-data", f"audio{os.pathsep}audio",
-            "--add-data", f"README.md{os.pathsep}.",
             # Windows-specific options
         ]
+        
+        # Add data files if they exist
+        audio_path = self.project_root / "audio"
+        readme_path = self.project_root / "README.md"
+        
+        if audio_path.exists() and any(audio_path.iterdir()):
+            cmd.extend(["--add-data", f"{audio_path}{os.pathsep}audio"])
+        
+        if readme_path.exists():
+            cmd.extend(["--add-data", f"{readme_path}{os.pathsep}."])
         
         if self.current_os == "windows":
             cmd.extend([
                 "--console",  # Keep console for now, can be changed to --windowed later
-                "--icon", "icon.ico"  # Add icon if you create one
             ])
+            # Only add icon if it exists
+            icon_path = self.project_root / "icon.ico"
+            if icon_path.exists():
+                cmd.extend(["--icon", str(icon_path)])
         
         cmd.append("main.py")
         

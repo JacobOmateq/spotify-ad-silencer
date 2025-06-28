@@ -89,19 +89,19 @@ class ProcessSpecificAudioController:
     def _setup_windows_audio(self):
         """Setup Windows audio control using pycaw"""
         try:
-            logger.info("Windows process-specific audio control initialized")
+            logger.debug("Windows process-specific audio control initialized")
         except Exception as e:
             logger.error(f"Failed to setup Windows audio control: {e}")
     
     def _setup_macos_audio(self):
         """Setup macOS audio control using AppleScript"""
-        logger.info("macOS process-specific audio control initialized")
+        logger.debug("macOS process-specific audio control initialized")
     
     def _setup_linux_audio(self):
         """Setup Linux audio control using PulseAudio"""
         try:
             self.pulse = pulsectl.Pulse('spotify-ad-silencer')
-            logger.info("Linux PulseAudio process-specific control initialized")
+            logger.debug("Linux PulseAudio process-specific control initialized")
         except Exception as e:
             logger.error(f"Failed to setup Linux audio control: {e}")
             self.pulse = None
@@ -144,12 +144,12 @@ class ProcessSpecificAudioController:
                     # Store original volume before muting
                     self.spotify_original_volume = volume.GetMasterVolume()
                     volume.SetMute(True, None)
-                    logger.info(f"Muted Spotify process (PID: {session.Process.pid})")
+                    logger.debug(f"Muted Spotify process (PID: {session.Process.pid})")
                 elif not mute and self.is_spotify_muted:
                     # Unmute and restore original volume
                     volume.SetMute(False, None)
                     volume.SetMasterVolume(self.spotify_original_volume, None)
-                    logger.info(f"Unmuted Spotify process (PID: {session.Process.pid})")
+                    logger.debug(f"Unmuted Spotify process (PID: {session.Process.pid})")
             
             self.is_spotify_muted = mute
             
@@ -222,11 +222,11 @@ class ProcessSpecificAudioController:
                     # Store original volume before muting
                     self.spotify_original_volume = sink_input.volume.value_flat
                     self.pulse.volume_set_all_chans(sink_input, 0.0)
-                    logger.info(f"Muted Spotify audio stream (index: {sink_input.index})")
+                    logger.debug(f"Muted Spotify audio stream (index: {sink_input.index})")
                 elif not mute and self.is_spotify_muted:
                     # Restore original volume
                     self.pulse.volume_set_all_chans(sink_input, self.spotify_original_volume)
-                    logger.info(f"Unmuted Spotify audio stream (index: {sink_input.index})")
+                    logger.debug(f"Unmuted Spotify audio stream (index: {sink_input.index})")
             
             self.is_spotify_muted = mute
             
@@ -273,20 +273,7 @@ class CrossPlatformSpotifyDetector:
             return None
         
         try:
-            # Try to find windows with "Spotify" in the title first
-            all_windows = gw.getAllWindows()
-            spotify_titled_windows = []
-            
-            for window in all_windows:
-                if window.title and 'Spotify' in window.title:
-                    # Exclude IDE windows
-                    if not any(ide in window.title for ide in ['Cursor', 'VSCode', 'Visual Studio', 'Atom', 'Sublime', '.py', '.txt', '.js', '.html']):
-                        spotify_titled_windows.append(window)
-            
-            if spotify_titled_windows:
-                return spotify_titled_windows[0]
-            
-            # If no "Spotify" titled windows found, look for Spotify process windows
+            # First, try to find actual Spotify process windows
             spotify_processes = []
             for proc in psutil.process_iter(['pid', 'name']):
                 if proc.info['name'] in self.spotify_process_names:
@@ -302,19 +289,71 @@ class CrossPlatformSpotifyDetector:
                     if pid in spotify_processes:
                         title = win32gui.GetWindowText(hwnd)
                         if title and len(title.strip()) > 0:
-                            if not any(skip in title.lower() for skip in ['spotify helper', 'crashpad']):
+                            # Exclude helper processes and system windows
+                            if not any(skip in title.lower() for skip in ['spotify helper', 'crashpad', 'msctfime ui']):
                                 spotify_windows.append((hwnd, title))
             
             spotify_windows = []
             win32gui.EnumWindows(enum_windows_callback, spotify_windows)
             
             if spotify_windows:
+                # Prefer the main Spotify window (usually the one with music info or "Spotify")
+                for hwnd, title in spotify_windows:
+                    # Look for windows that are clearly the main Spotify window
+                    if (' - ' in title and title != 'Spotify') or title in ['Spotify', 'Spotify Free', 'Spotify Premium']:
+                        class SpotifyWindow:
+                            def __init__(self, hwnd, title):
+                                self.title = title
+                                self._hwnd = hwnd
+                        return SpotifyWindow(hwnd, title)
+                
+                # Fallback to first Spotify window
                 hwnd, title = spotify_windows[0]
                 class SpotifyWindow:
                     def __init__(self, hwnd, title):
                         self.title = title
                         self._hwnd = hwnd
                 return SpotifyWindow(hwnd, title)
+            
+            # Fallback: Try window title search only for Spotify process windows
+            all_windows = gw.getAllWindows()
+            spotify_titled_windows = []
+            
+            for window in all_windows:
+                if window.title and 'Spotify' in window.title:
+                    # Much stricter filtering - exclude browsers and other apps
+                    exclusions = [
+                        'Chrome', 'Firefox', 'Edge', 'Safari', 'Opera',  # Browsers
+                        'Cursor', 'VSCode', 'Visual Studio', 'Atom', 'Sublime',  # IDEs
+                        '.py', '.txt', '.js', '.html', '.exe',  # Files
+                        'SpotifyAdSilencer', 'Ad Silencer', 'Google',  # Our app and websites
+                        'C:\\', 'D:\\', 'E:\\',  # Drive paths
+                    ]
+                    
+                    # Check if this is actually Spotify and not another app
+                    is_excluded = any(exclusion in window.title for exclusion in exclusions)
+                    
+                    # Also check if it's a file path or web page
+                    is_file_path = ('\\' in window.title and '.exe' in window.title) or ('C:' in window.title)
+                    is_webpage = any(web in window.title.lower() for web in [' - google chrome', ' - firefox', ' - edge', ' - safari'])
+                    
+                    if not is_excluded and not is_file_path and not is_webpage:
+                        spotify_titled_windows.append(window)
+            
+            # Sort by most likely to be the main Spotify window (fallback method)
+            if spotify_titled_windows:
+                # Prefer windows that look like music titles (Artist - Song)
+                for window in spotify_titled_windows:
+                    if ' - ' in window.title and window.title != 'Spotify':
+                        return window
+                
+                # If no music titles, prefer the first non-generic title
+                for window in spotify_titled_windows:
+                    if window.title not in ['Spotify', 'Spotify Free', 'Spotify Premium']:
+                        return window
+                
+                # Fallback to any Spotify window
+                return spotify_titled_windows[0]
             
             return None
             
@@ -396,7 +435,7 @@ class EnhancedAudioPlayer:
             
         try:
             pygame.mixer.init()
-            logger.info("Audio player initialized successfully")
+            logger.debug("Audio player initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize audio player: {e}")
             logger.warning("Random audio playback will be disabled")
@@ -430,7 +469,7 @@ class EnhancedAudioPlayer:
             
             # Select a random file
             random_file = random.choice(audio_files)
-            logger.info(f"Selected random {file_type} file: {os.path.basename(random_file)}")
+            logger.debug(f"Selected random {file_type} file: {os.path.basename(random_file)}")
             return random_file
             
         except Exception as e:
@@ -454,7 +493,7 @@ class EnhancedAudioPlayer:
             if music_files:
                 random.shuffle(music_files)
                 self.music_queue = music_files
-                logger.info(f"Created music queue with {len(self.music_queue)} files")
+                logger.debug(f"Created music queue with {len(self.music_queue)} files")
             else:
                 logger.warning("No music files found for queue")
                 
@@ -468,7 +507,7 @@ class EnhancedAudioPlayer:
             
         if self.music_queue:
             next_file = self.music_queue.pop(0)
-            logger.info(f"Next music file: {os.path.basename(next_file)}")
+            logger.debug(f"Next music file: {os.path.basename(next_file)}")
             return next_file
         
         return None
@@ -497,13 +536,13 @@ class EnhancedAudioPlayer:
             
             # Load and play the voice file (play once, not looped)
             pygame.mixer.music.load(voice_file)
-            pygame.mixer.music.set_volume(1.0)  # Voice at 80% volume for clarity
+            pygame.mixer.music.set_volume(1.0)  # Voice at full volume
             pygame.mixer.music.play(0)  # Play once
             
             self.current_audio = voice_file
             self.current_stage = 'voice'
             self.is_playing = True
-            logger.info(f"Playing voice announcement: {os.path.basename(voice_file)}")
+            logger.debug(f"Playing voice announcement: {os.path.basename(voice_file)}")
             
         except Exception as e:
             logger.error(f"Error playing voice announcement: {e}")
@@ -530,7 +569,7 @@ class EnhancedAudioPlayer:
             self.current_audio = music_file
             self.current_stage = 'music'
             self.is_playing = True
-            logger.info(f"Playing ambient music: {os.path.basename(music_file)}")
+            logger.debug(f"Playing ambient music: {os.path.basename(music_file)}")
             
         except Exception as e:
             logger.error(f"Error playing ambient music: {e}")
@@ -550,11 +589,11 @@ class EnhancedAudioPlayer:
             if not pygame.mixer.music.get_busy():
                 if self.current_stage == 'voice':
                     # Voice finished, start music
-                    logger.info("Voice announcement finished, starting ambient music")
+                    logger.debug("Voice announcement finished, starting ambient music")
                     self._play_ambient_music()
                 elif self.current_stage == 'music':
                     # Music finished, play next music file
-                    logger.info("Music track finished, playing next track")
+                    logger.debug("Music track finished, playing next track")
                     self._play_ambient_music()
                     
         except Exception as e:
@@ -575,13 +614,11 @@ class EnhancedAudioPlayer:
             self.is_playing = False
             self.current_stage = None
             self.music_queue.clear()  # Clear the music queue
-            logger.info(f"Stopped playing audio: {os.path.basename(self.current_audio) if self.current_audio else 'Unknown'}")
+            logger.debug(f"Stopped playing audio: {os.path.basename(self.current_audio) if self.current_audio else 'Unknown'}")
             self.current_audio = None
             
         except Exception as e:
             logger.error(f"Error stopping audio: {e}")
-    
-
     
     def is_audio_playing(self) -> bool:
         """Check if audio is currently playing"""
@@ -649,7 +686,7 @@ def main():
     except ImportError:
         logger.warning("Donation system not available")
     
-    logger.info(f"Starting Cross-Platform Spotify Ad Silencer with Process-Specific Audio Control on {CURRENT_OS}")
+    logger.info(f"🎵 Starting Spotify Ad Silencer on {CURRENT_OS.title()} - Waiting for Spotify...")
     
     audio_controller = ProcessSpecificAudioController()
     spotify_detector = CrossPlatformSpotifyDetector()
@@ -658,53 +695,97 @@ def main():
     was_muted = False
     ads_blocked = 0
     session_start = time.time()
+    last_window_title = ""
+    spotify_not_running_logged = False
+    spotify_not_found_logged = False
     
     while True:
         try:
             # Check if Spotify is running
             if not spotify_detector.is_spotify_running():
-                logger.info("Spotify is not running. Waiting...")
+                if not spotify_not_running_logged:
+                    logger.info("⏸️  Spotify not running - Waiting for Spotify to start...")
+                    spotify_not_running_logged = True
                 if was_muted:
                     audio_controller.set_spotify_mute(False)
                     enhanced_audio_player.stop_audio()  # Stop ambient audio when Spotify is not running
                     was_muted = False
+                    last_window_title = ""
                 time.sleep(5)
                 continue
+            
+            # Reset the flag when Spotify is running again
+            spotify_not_running_logged = False
+            spotify_not_found_logged = False
             
             # Get Spotify window
             spotify_window = spotify_detector.get_spotify_window()
             if spotify_window:
                 window_title = spotify_window.title
-                logger.info(f"Current Spotify window title: {window_title}")
                 
-                # Check if ad is playing
-                if is_ad_playing(window_title):
+                # Skip if we got an invalid window title (file paths, etc.)
+                if not window_title or window_title.strip() == "" or ".exe" in window_title:
+                    if not spotify_not_found_logged:
+                        logger.info("🔍 Invalid Spotify window detected - Retrying...")
+                        spotify_not_found_logged = True
+                    time.sleep(2)
+                    continue
+                
+                # Only log when title changes
+                if window_title != last_window_title:
+                    is_ad = is_ad_playing(window_title)
+                    
+                    # Special handling for paused state
+                    if window_title in ["Spotify Free", "Spotify Premium", "Spotify"]:
+                        status = "⏸️ [PAUSED]"
+                        logger.info(f"{status} {window_title}")
+                    else:
+                        status = "🔇 [AD]" if is_ad else "🎵 [MUSIC]"
+                        logger.info(f"{status} {window_title}")
+                    
+                    last_window_title = window_title
+                
+                # Check if ad is playing (but not if paused)
+                is_paused = window_title in ["Spotify Free", "Spotify Premium", "Spotify"]
+                is_ad = is_ad_playing(window_title)
+                
+                if is_ad and not is_paused:
+                    # Real ad detected
                     if not was_muted:
                         audio_controller.set_spotify_mute(True)
                         enhanced_audio_player.start_ad_audio_sequence()  # Start voice then music sequence
                         was_muted = True
                         ads_blocked += 1
-                        logger.info("Advertisement detected. Muting Spotify audio and starting voice announcement followed by ambient music.")
+                        logger.info(f"🔇 Advertisement detected! Muting Spotify audio (Ad #{ads_blocked})")
                     else:
                         # Update audio playback (handle voice->music transitions and music queue)
                         enhanced_audio_player.update_audio_playback()
+                elif is_paused:
+                    # Spotify is paused - don't treat as ad, but don't unmute either
+                    if was_muted:
+                        # If we were muted due to ads, stay muted while paused
+                        enhanced_audio_player.update_audio_playback()
                 else:
+                    # Music is playing
                     if was_muted:
                         audio_controller.set_spotify_mute(False)
                         enhanced_audio_player.stop_audio()  # Stop all audio when music resumes
                         was_muted = False
-                        logger.info("Music playing. Unmuting Spotify audio and stopping ambient audio.")
+                        logger.info("🎵 Music resumed! Unmuting Spotify audio")
             else:
-                logger.info("Spotify window not found. Waiting...")
+                if not spotify_not_found_logged:
+                    logger.info("🔍 Spotify window not found - Waiting...")
+                    spotify_not_found_logged = True
                 if was_muted:
                     audio_controller.set_spotify_mute(False)
                     enhanced_audio_player.stop_audio()  # Stop ambient audio when Spotify window not found
                     was_muted = False
+                    last_window_title = ""
             
             time.sleep(1)
             
         except KeyboardInterrupt:
-            logger.info("Shutting down...")
+            logger.info("🛑 Shutting down Spotify Ad Silencer...")
             if was_muted:
                 audio_controller.set_spotify_mute(False)
                 enhanced_audio_player.stop_audio()  # Stop ambient audio on shutdown

@@ -228,6 +228,92 @@
                 display: none;
             }
         }
+
+        /* Bitcoin Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .bitcoin-address {
+            background: #f8f9fa;
+            border: 2px solid #1db954;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .copy-btn {
+            background: #1db954;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #1ed760;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .qr-section {
+            margin: 20px 0;
+        }
+
+        .qr-code {
+            margin: 15px auto;
+            max-width: 200px;
+        }
+
+        .bitcoin-icon {
+            color: #f7931a;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -258,8 +344,8 @@
             <div class="container">
                 <div class="stats-grid">
                     <div class="stat">
-                        <div class="stat-number">50,000+</div>
-                        <div>Downloads</div>
+                        <div class="stat-number">New!</div>
+                        <div>Fresh Release</div>
                     </div>
                     <div class="stat">
                         <div class="stat-number">3</div>
@@ -371,8 +457,8 @@
                     
                     <div class="support-card">
                         <h4>⭐ GitHub Sponsors</h4>
-                        <p>Monthly sponsorship program</p>
-                        <a href="https://github.com/sponsors/JacobOmateq" class="btn">Become a Sponsor</a>
+                        <p>Monthly or one-time donations</p>
+                        <a href="https://github.com/sponsors/JacobOmateq" class="btn">Donate via GitHub</a>
                     </div>
                     
                     <div class="support-card">
@@ -384,7 +470,7 @@
                     <div class="support-card">
                         <h4>₿ Crypto</h4>
                         <p>Bitcoin donations</p>
-                        <a href="#" class="btn" onclick="alert('Bitcoin: 33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM')">BTC Address</a>
+                        <a href="#" class="btn" onclick="showBitcoinModal()">Donate Bitcoin</a>
                     </div>
                 </div>
                 
@@ -403,19 +489,60 @@
             <p>
                 <a href="https://github.com/JacobOmateq/spotify-ad-silencer" style="color: #1db954;">GitHub</a> •
                 <a href="https://github.com/JacobOmateq/spotify-ad-silencer/issues" style="color: #1db954;">Bug Reports</a> •
-                <a href="mailto:your.email@example.com" style="color: #1db954;">Contact</a>
+                <a href="mailto:jacob@jacobscode.com" style="color: #1db954;">Contact</a>
             </p>
         </div>
     </footer>
+
+    <!-- Bitcoin Donation Modal -->
+    <div id="bitcoinModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeBitcoinModal()">&times;</span>
+            
+            <div class="bitcoin-icon">₿</div>
+            <h2>Bitcoin Donation</h2>
+            <p>Support Spotify Ad Silencer with Bitcoin!</p>
+            
+            <div class="bitcoin-address" id="bitcoinAddress">
+                33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM
+            </div>
+            
+            <button class="copy-btn" onclick="copyBitcoinAddress()" id="copyBtn">
+                📋 Copy Address
+            </button>
+            
+            <div class="qr-section">
+                <p><strong>Scan QR Code:</strong></p>
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM" 
+                         alt="Bitcoin QR Code" 
+                         style="width: 100%; border-radius: 10px;">
+                </div>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    Scan with your Bitcoin wallet app
+                </p>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 10px;">
+                <p style="font-size: 0.9em; color: #555;">
+                    <strong>💙 Thank you for supporting open source!</strong><br>
+                    Your donation helps keep this project free for everyone.
+                </p>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = this.getAttribute('href');
+                if (target && target !== '#') {
+                    document.querySelector(target).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
             });
         });
 
@@ -425,6 +552,77 @@
                 // Add analytics tracking here if needed
                 console.log('Download clicked:', this.href);
             });
+        });
+
+        // Bitcoin Modal Functions
+        function showBitcoinModal() {
+            document.getElementById('bitcoinModal').style.display = 'block';
+        }
+
+        function closeBitcoinModal() {
+            document.getElementById('bitcoinModal').style.display = 'none';
+        }
+
+        function copyBitcoinAddress() {
+            const address = '33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM';
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Try to copy to clipboard
+            if (navigator.clipboard && window.isSecureContext) {
+                // Modern clipboard API
+                navigator.clipboard.writeText(address).then(() => {
+                    showCopySuccess(copyBtn);
+                }).catch(() => {
+                    fallbackCopy(address, copyBtn);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopy(address, copyBtn);
+            }
+        }
+
+        function fallbackCopy(text, btn) {
+            // Create a temporary input element
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess(btn);
+            } catch (err) {
+                // If copy fails, show the address for manual copy
+                alert('Copy failed. Bitcoin address: ' + text);
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+
+        function showCopySuccess(btn) {
+            btn.innerHTML = '✅ Copied!';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.innerHTML = '📋 Copy Address';
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('bitcoinModal');
+            if (event.target === modal) {
+                closeBitcoinModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeBitcoinModal();
+            }
         });
     </script>
 </body>

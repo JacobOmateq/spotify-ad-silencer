@@ -112,6 +112,15 @@ class EnhancedAdDetector:
             return True  # Empty titles are usually ads
         
         title = window_title.strip()
+        
+        # Special handling for common non-ad states
+        if self._is_paused_or_idle_state(title):
+            return False  # Don't treat paused music as ads
+        
+        # Check if it's clearly a file path or executable (wrong window detection)
+        if self._is_file_path(title):
+            return False  # This indicates wrong window, not an ad
+        
         max_confidence = 0.0
         
         # Check against known ad patterns
@@ -132,9 +141,38 @@ class EnhancedAdDetector:
                 max_confidence = max(0.0, max_confidence - 0.4)  # Reduce confidence if it looks like music
                 break
         
-        logger.info(f"Title: '{title}' | Confidence: {max_confidence:.2f} | Is Ad: {max_confidence >= confidence_threshold}")
-        
         return max_confidence >= confidence_threshold
+    
+    def _is_paused_or_idle_state(self, title: str) -> bool:
+        """Check if Spotify is in a paused or idle state (not an ad)"""
+        paused_indicators = [
+            "Spotify Free",  # Common when paused
+            "Spotify Premium",  # Common when paused
+            "Spotify",  # Just "Spotify" when idle
+        ]
+        
+        # If it's exactly one of these without additional content, it's likely paused
+        title_clean = title.strip()
+        for indicator in paused_indicators:
+            if title_clean == indicator:
+                return True  # This is paused/idle, not an ad
+        
+        return False
+    
+    def _is_file_path(self, title: str) -> bool:
+        """Check if the title is actually a file path (wrong window detection)"""
+        path_indicators = [
+            ':\\',  # Windows drive letter
+            '.exe',  # Executable file
+            '/',    # Unix path separator
+            '\\',   # Windows path separator
+        ]
+        
+        for indicator in path_indicators:
+            if indicator in title:
+                return True
+        
+        return False
 
 # Test the enhanced detector
 def run_international_test():
