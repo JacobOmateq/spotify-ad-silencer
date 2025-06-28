@@ -754,12 +754,12 @@ class EnhancedAudioPlayer:
         return None
     
     def start_ad_audio_sequence(self):
-        """Start the two-stage audio sequence: voice first, then music"""
+        """Start playing music directly when ad is detected"""
         if self.is_playing:
             return  # Already playing
         
         self.create_music_queue()  # Prepare music queue
-        self._play_voice_announcement()
+        self._play_ambient_music()  # Go directly to music, skip voice
     
     def _play_voice_announcement(self):
         """Play a random voice announcement"""
