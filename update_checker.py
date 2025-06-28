@@ -3,6 +3,7 @@ import json
 import logging
 from typing import Optional, Dict
 import webbrowser
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -82,12 +83,15 @@ class UpdateChecker:
     def _show_update_notification(self, update_info: Dict):
         """Show update notification to user"""
         try:
+            if platform.system().lower() == "darwin":
+                # On macOS, avoid Tkinter in background thread; print to console instead
+                logger.info(f"Update available: v{update_info['latest_version']} (current: v{update_info['current_version']})")
+                logger.info(f"Download from: {update_info['download_url']}")
+                return
             import tkinter as tk
             from tkinter import messagebox
-            
             root = tk.Tk()
             root.withdraw()
-            
             message = (
                 f"🎉 New Version Available!\n\n"
                 f"Current Version: {update_info['current_version']}\n"
@@ -95,19 +99,15 @@ class UpdateChecker:
                 f"Release: {update_info['release_name']}\n\n"
                 f"Would you like to download the update?"
             )
-            
             result = messagebox.askyesno(
                 "Spotify Ad Silencer - Update Available",
                 message,
                 icon="info"
             )
-            
             if result:
                 webbrowser.open(update_info['download_url'])
                 logger.info("Opened browser to download update")
-            
             root.destroy()
-            
         except ImportError:
             # Fallback for systems without tkinter
             logger.info(f"Update available: v{update_info['latest_version']} (current: v{update_info['current_version']})")
