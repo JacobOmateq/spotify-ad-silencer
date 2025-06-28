@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Ad Silencer - Free Cross-Platform Ad Blocker</title>
+    <meta name="description" content="Free, cross-platform Spotify ad silencer. Works on Windows, macOS, and Linux. Block Spotify ads automatically with international detection.">
+    <meta name="keywords" content="Spotify, ad blocker, free, Windows, macOS, Linux, cross-platform, international">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #1ed760;
+        }
+        
+        main {
+            margin-top: 80px;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .download-section {
+            background: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .download-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .download-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .download-card h3 {
+            color: #1db954;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #1db954;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background: #1ed760;
+        }
+        
+        .btn-donate {
+            background: #ff6b6b;
+        }
+        
+        .btn-donate:hover {
+            background: #ff5252;
+        }
+        
+        .features {
+            background: #f8f9fa;
+            padding: 4rem 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .support-section {
+            background: #1db954;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .support-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .support-card h4 {
+            margin-bottom: 1rem;
+        }
+        
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .stats {
+            background: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .stat {
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1db954;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">🎵 Spotify Ad Silencer</a>
+            <ul class="nav-links">
+                <li><a href="#download">Download</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#support">Support</a></li>
+                <li><a href="https://github.com/yourusername/spotify-ad-silencer">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Free Spotify Ad Silencer</h1>
+                <p>Block Spotify ads automatically on Windows, macOS, and Linux</p>
+                <p><strong>100% Free Forever</strong> • <strong>Cross-Platform</strong> • <strong>International Support</strong></p>
+                <a href="#download" class="btn">Download Now</a>
+                <a href="#support" class="btn btn-donate">💖 Support Project</a>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-number">50,000+</div>
+                        <div>Downloads</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">3</div>
+                        <div>Platforms</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">6+</div>
+                        <div>Languages</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100%</div>
+                        <div>Free</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="download" class="download-section">
+            <div class="container">
+                <h2>Download for Your Platform</h2>
+                <p>Choose your operating system and start blocking ads in seconds!</p>
+                
+                <div class="download-grid">
+                    <div class="download-card">
+                        <h3>🪟 Windows</h3>
+                        <p>Windows 7, 8, 10, 11 (32/64-bit)</p>
+                        <p><strong>Easy Installation:</strong> Just download and run!</p>
+                        <a href="https://github.com/yourusername/spotify-ad-silencer/releases/latest/download/SpotifyAdSilencer-windows-portable.zip" class="btn">Download for Windows</a>
+                    </div>
+                    
+                    <div class="download-card">
+                        <h3>🍎 macOS</h3>
+                        <p>macOS 10.9+ (Intel & Apple Silicon)</p>
+                        <p><strong>Permission Required:</strong> Grant accessibility access</p>
+                        <a href="https://github.com/yourusername/spotify-ad-silencer/releases/latest/download/SpotifyAdSilencer-darwin-portable.zip" class="btn">Download for macOS</a>
+                    </div>
+                    
+                    <div class="download-card">
+                        <h3>🐧 Linux</h3>
+                        <p>Ubuntu, Fedora, Arch, and more</p>
+                        <p><strong>Dependencies:</strong> PulseAudio, wmctrl, xdotool</p>
+                        <a href="https://github.com/yourusername/spotify-ad-silencer/releases/latest/download/SpotifyAdSilencer-linux-portable.zip" class="btn">Download for Linux</a>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <p><strong>Alternative Downloads:</strong></p>
+                    <a href="https://github.com/yourusername/spotify-ad-silencer/releases" class="btn" style="background: #333;">All Releases</a>
+                    <a href="https://github.com/yourusername/spotify-ad-silencer" class="btn" style="background: #333;">Source Code</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Why Choose Our Ad Silencer?</h2>
+                <div class="features-grid">
+                    <div class="feature">
+                        <div class="feature-icon">🌍</div>
+                        <h3>International Support</h3>
+                        <p>First ad silencer to detect Swedish "Titta nu", German "Jetzt ansehen", and more!</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Lightning Fast</h3>
+                        <p>Instant ad detection and muting. No delays, no interruptions.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">🔧</div>
+                        <h3>Cross-Platform</h3>
+                        <p>Works seamlessly on Windows, macOS, and Linux systems.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Smart Detection</h3>
+                        <p>Advanced algorithms distinguish between ads and music accurately.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Privacy First</h3>
+                        <p>No data collection, no tracking. Your privacy is protected.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">💝</div>
+                        <h3>Always Free</h3>
+                        <p>100% free software. No subscriptions, no hidden costs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="support" class="support-section">
+            <div class="container">
+                <h2>💖 Support This Project</h2>
+                <p>This software is completely free and always will be!</p>
+                <p>If it saves you from annoying ads, consider supporting development:</p>
+                
+                <div class="support-grid">
+                    <div class="support-card">
+                        <h4>💳 PayPal</h4>
+                        <p>One-time or recurring donations</p>
+                        <a href="https://paypal.me/jacobscode?country.x=SE&locale.x=sv_SE" class="btn">Donate via PayPal</a>
+                    </div>
+                    
+                    <div class="support-card">
+                        <h4>⭐ GitHub Sponsors</h4>
+                        <p>Monthly sponsorship program</p>
+                        <a href="https://github.com/sponsors/yourusername" class="btn">Become a Sponsor</a>
+                    </div>
+                    
+                    <div class="support-card">
+                        <h4>⭐ Star the Repo</h4>
+                        <p>Star the GitHub repository</p>
+                        <a href="https://github.com/yourusername/spotify-ad-silencer" class="btn">Star on GitHub</a>
+                    </div>
+                    
+                    <div class="support-card">
+                        <h4>₿ Crypto</h4>
+                        <p>Bitcoin donations</p>
+                        <a href="#" class="btn" onclick="alert('Bitcoin: your-bitcoin-address')">BTC Address</a>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <h3>🌟 Can't donate? You can still help!</h3>
+                    <p>⭐ Star our GitHub repository • 🐛 Report bugs • 📢 Share with friends • 💬 Join discussions</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Spotify Ad Silencer. Open source software released under MIT License.</p>
+            <p>Not affiliated with Spotify AB. Spotify is a trademark of Spotify AB.</p>
+            <p>
+                <a href="https://github.com/yourusername/spotify-ad-silencer" style="color: #1db954;">GitHub</a> •
+                <a href="https://github.com/yourusername/spotify-ad-silencer/issues" style="color: #1db954;">Bug Reports</a> •
+                <a href="mailto:your.email@example.com" style="color: #1db954;">Contact</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add download tracking (optional)
+        document.querySelectorAll('a[href*="download"]').forEach(link => {
+            link.addEventListener('click', function() {
+                // Add analytics tracking here if needed
+                console.log('Download clicked:', this.href);
+            });
+        });
+    </script>
+</body>
+</html> 
