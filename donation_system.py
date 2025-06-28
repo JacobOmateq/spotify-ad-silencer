@@ -18,8 +18,8 @@ class DonationManager:
         self.config_file = os.path.join(config_dir, "donation_config.json")
         self.donation_links = {
             "paypal": "https://paypal.me/jacobscode?country.x=SE&locale.x=sv_SE",
-            "github": "https://github.com/sponsors/yourusername",
-            "bitcoin": "your-bitcoin-address"
+            "github": "https://github.com/sponsors/JacobOmateq",
+            "bitcoin": "33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM"
         }
         self.load_config()
     

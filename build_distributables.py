@@ -237,8 +237,8 @@ However, if this tool saves you from annoying Spotify ads and you'd like to supp
 
 ### One-time Donations
 - **PayPal**: https://paypal.me/jacobscode?country.x=SE&locale.x=sv_SE
-- **GitHub Sponsors**: [Your GitHub Sponsors link]
-- **Bitcoin**: [Your BTC address]
+- **GitHub Sponsors**: https://github.com/sponsors/JacobOmateq
+- **Bitcoin**: 33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM
 
 ### Monthly Support
 - **GitHub Sponsors**: Starting at $1/month

@@ -9,7 +9,7 @@ The website is automatically deployed to GitHub Pages via GitHub Actions when yo
 1. Push changes to the `website/` folder
 2. Manually trigger the workflow in Actions tab
 
-**Live URL**: `https://yourusername.github.io/spotify-ad-silencer`
+**Live URL**: `https://JacobOmateq.github.io/spotify-ad-silencer`
 
 ### Setting Up GitHub Pages
 1. Go to your repository Settings
@@ -35,9 +35,9 @@ npx serve .
 The website includes your PayPal link: https://paypal.me/jacobscode?country.x=SE&locale.x=sv_SE
 
 To update other links:
-1. Replace `yourusername` with your GitHub username
-2. Add your Bitcoin address if you want crypto donations
-3. Update GitHub Sponsors link once approved
+1. All GitHub links now point to JacobOmateq/spotify-ad-silencer
+2. Bitcoin address already configured: 33MvnRKM9QmimTuhTZMVmKbYRBBf2umdoM
+3. GitHub Sponsors link ready once you're approved
 
 ### Features
 - **Responsive Design**: Works on mobile and desktop
