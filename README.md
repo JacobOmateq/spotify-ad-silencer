@@ -23,7 +23,23 @@ A universal Spotify ad silencer that works on **Windows**, **macOS**, and **Linu
 
 ## Installation & Setup
 
-### 1. Install Python Dependencies
+### Quick Install (macOS) 🍺
+
+**Homebrew (Recommended for macOS users):**
+```bash
+# Add the tap
+brew tap JacobOmateq/spotify-ad-silencer
+
+# Install
+brew install spotify-ad-silencer
+
+# Run
+spotify-ad-silencer
+```
+
+### Manual Installation
+
+#### 1. Install Python Dependencies
 
 **All Platforms:**
 ```bash
@@ -41,7 +57,7 @@ sudo apt install pulseaudio pulseaudio-utils wmctrl xdotool
 sudo dnf install pulseaudio pulseaudio-utils wmctrl xdotool
 ```
 
-### 2. Platform-Specific Setup
+#### 2. Platform-Specific Setup
 
 #### Windows
 - ✅ **Ready to go!** - All dependencies install automatically

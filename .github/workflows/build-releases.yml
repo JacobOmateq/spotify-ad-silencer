@@ -81,7 +81,7 @@ jobs:
           
           ### 📦 Download for your platform:
           - **Windows**: Download `SpotifyAdSilencer-windows-portable.zip`
-          - **macOS**: Download `SpotifyAdSilencer-darwin-portable.zip`
+          - **macOS**: Download `SpotifyAdSilencer-darwin-portable.zip` OR `brew install JacobOmateq/spotify-ad-silencer/spotify-ad-silencer`
           - **Linux**: Download `SpotifyAdSilencer-linux-portable.zip`
           
           ### 🚀 Quick Start:
@@ -89,6 +89,18 @@ jobs:
           2. Extract the contents
           3. Run the executable (see INSTALL.md for details)
           4. Enjoy ad-free Spotify!
+          
+          ### 🍺 Homebrew Installation (macOS):
+          ```bash
+          # First time: Add the tap
+          brew tap JacobOmateq/spotify-ad-silencer
+          
+          # Install or update
+          brew install spotify-ad-silencer
+          
+          # Run the application
+          spotify-ad-silencer
+          ```
           
           ### 💖 Support This Project:
           This software is completely free! If it saves you from annoying ads, consider supporting development:
@@ -102,6 +114,7 @@ jobs:
           - Improved ad detection accuracy
           - Better audio control
           - Non-intrusive donation system
+          - **NEW**: Homebrew support for macOS users!
           
           ### 🐛 Bug Reports:
           Found an issue? Please report it in the [Issues](https://github.com/${{ github.repository }}/issues) section.
@@ -114,4 +127,110 @@ jobs:
           ./artifacts/SpotifyAdSilencer-darwin-portable.zip/SpotifyAdSilencer-darwin-portable.zip
           ./artifacts/SpotifyAdSilencer-linux-portable.zip/SpotifyAdSilencer-linux-portable.zip
         draft: false
-        prerelease: false 
+        prerelease: false
+
+  update-homebrew:
+    needs: [build, create-release]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SpotifyAdSilencer-darwin-portable.zip
+        path: ./macos-artifact
+
+    - name: Calculate SHA256 of macOS ZIP
+      id: sha256
+      run: |
+        SHA256=$(sha256sum ./macos-artifact/SpotifyAdSilencer-darwin-portable.zip | cut -d' ' -f1)
+        echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+        echo "Calculated SHA256: $SHA256"
+
+    - name: Get release info
+      id: release_info
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Release version: $VERSION"
+
+    - name: Update Homebrew Formula
+      env:
+        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        VERSION: ${{ steps.release_info.outputs.version }}
+        SHA256: ${{ steps.sha256.outputs.sha256 }}
+      run: |
+        # Clone the homebrew tap repository
+        git clone https://github.com/JacobOmateq/homebrew-spotify-ad-silencer.git homebrew-tap
+        cd homebrew-tap
+        
+        # Configure git
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+        # Create or update the formula
+        cat > Formula/spotify-ad-silencer.rb << EOF
+        class SpotifyAdSilencer < Formula
+          desc "Cross-platform Spotify ad silencer - completely FREE!"
+          homepage "https://github.com/JacobOmateq/spotify-ad-silencer"
+          url "https://github.com/JacobOmateq/spotify-ad-silencer/releases/download/${VERSION}/SpotifyAdSilencer-darwin-portable.zip"
+          sha256 "${SHA256}"
+          version "${VERSION#v}"
+          license "MIT"
+
+          def install
+            # Extract the portable app contents
+            prefix.install Dir["*"]
+            
+            # Create a wrapper script for the executable
+            (bin/"spotify-ad-silencer").write <<~EOS
+              #!/bin/bash
+              cd "#{prefix}" && exec "./SpotifyAdSilencer" "\$@"
+            EOS
+            
+            # Make the wrapper executable
+            chmod 0755, bin/"spotify-ad-silencer"
+          end
+
+          def caveats
+            <<~EOS
+              🎵 Spotify Ad Silencer has been installed!
+              
+              To start the application:
+                spotify-ad-silencer
+                
+              Important notes:
+              • This tool requires the Spotify desktop application (not web player)
+              • You may need to grant accessibility permissions on macOS
+              • The app will run in the background and automatically detect ads
+              
+              For support and updates, visit:
+              https://github.com/JacobOmateq/spotify-ad-silencer
+              
+              If this saves you from annoying ads, consider:
+              • Starring the GitHub repository ⭐
+              • Supporting the developer (see DONATIONS.txt in #{prefix})
+            EOS
+          end
+
+          test do
+            # Basic test to ensure the executable exists and runs
+            assert_predicate bin/"spotify-ad-silencer", :exist?
+            assert_predicate bin/"spotify-ad-silencer", :executable?
+          end
+        end
+        EOF
+        
+        # Commit and push the changes
+        git add Formula/spotify-ad-silencer.rb
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update spotify-ad-silencer to ${VERSION}"
+          git push https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/JacobOmateq/homebrew-spotify-ad-silencer.git main
+          echo "✅ Homebrew formula updated successfully!"
+        fi 
