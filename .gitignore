@@ -201,3 +201,5 @@ env*/
 __pycache__/enhanced_ad_detection.cpython-311.pyc
 chrome-extension.crx
 chrome-extension.pem
+
+/homebrew-spotify-ad-silencer/
