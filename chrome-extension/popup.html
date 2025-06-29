@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Ad Silencer</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <div class="header">
+            <h1>🎵 Spotify Ad Silencer</h1>
+            <div class="stats">
+                <span class="stat" id="ads-blocked">0 ads blocked</span>
+                <span class="stat" id="uptime">0s uptime</span>
+                <span class="stat" id="detection-attempts">0 attempts</span>
+            </div>
+        </div>
+        
+        <div class="status-display">
+            <div class="status-circle" id="status-circle">⚫</div>
+            <div class="status-text">
+                <h2 id="status-title">Not Monitoring</h2>
+                <p id="current-track">Click start to begin</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-main" id="toggle-btn">▶️ Start Monitoring</button>
+
+            <div class="status-info">
+                <span class="status-badge" id="status-badge">🎵 Ready</span>
+            </div>
+        </div>
+        
+        <div class="spotify-tabs" id="spotify-tabs" style="display: none;">
+            <h3>Spotify Tabs:</h3>
+            <div id="tabs-list"></div>
+        </div>
+        
+
+        
+        <div class="footer">
+            <p>Automatically detects and mutes Spotify ads</p>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 
